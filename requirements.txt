@@ -1,0 +1,9 @@
+selenium
+webdriver-manager
+pytest
+mypy
+autopep8
+docformatter
+chromedriver-autoinstaller
+requests
+termcolor
