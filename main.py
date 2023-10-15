@@ -5,7 +5,7 @@ from inspect import currentframe, getframeinfo
 
 
 class business:
-    """Getter method"""
+    """Getter method."""
     @property
     def info(self):
         return (
@@ -14,7 +14,7 @@ class business:
             self.phone,
             self.address,
             self.website)
-    """Setter method"""
+    """Setter method."""
     @info.setter
     def info(self, business_name, url,
              phone="", address="", website=""):
@@ -32,11 +32,48 @@ def main():
     print(title)
     driver.implicitly_wait(5.5)
     driver.save_screenshot("screenshots/before.png")
-    business = driver.find_element(
-        By.XPATH,
-        value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[1]/div[1]/div/div')
-    business.click()
-    driver.implicitly_wait(10.5)
+    done = False
+    while True:
+        for i in range(1, 40, 2):
+            clicker = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div"
+            # clicker = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[1]/div[1]/div"
+            # business = driver.find_element(By.XPATH, value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[1]/div[1]/div/div')
+            try:
+                business = driver.find_element(By.XPATH, value=clicker)
+            except BaseException:
+                print("End of business listings")
+                return
+            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[3]/div[1]/div/div')
+            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[5]/div[1]/div')
+            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[7]/div[1]/div')
+            business.click()
+            # driver.implicitly_wait(10.5)
+            time.sleep(1.25)
+            name = driver.find_element(
+                By.XPATH,
+                value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[1]/div[1]/c-wiz/div")
+            print(name.text)
+        if not done:
+            try:
+                first_next = driver.find_element(
+                    By.XPATH,
+                    value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div/div/button")
+                done = True
+                first_next.click()
+                time.sleep(3)
+            except BaseException:
+                print("Button not found")
+        else:
+            try:
+                next = driver.find_element(
+                    By.XPATH,
+                    value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div[2]/div/button")
+                next.click()
+                time.sleep(3)
+            except BaseException:
+                print("Reached the end of listings")
+                return
+    '''
     business_info = driver.find_element(
         By.XPATH,
         value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]")
@@ -77,6 +114,7 @@ def main():
     except BaseException:
         print("Doesn't have a website!")
     print(getframeinfo(currentframe()).lineno)
+    '''
 
     driver.quit()
 
