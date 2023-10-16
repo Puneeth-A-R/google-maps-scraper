@@ -1,9 +1,9 @@
 selenium
 webdriver-manager
+chromedriver-autoinstaller
+requests
+termcolor
 pytest
 mypy
 autopep8
 docformatter
-chromedriver-autoinstaller
-requests
-termcolor
