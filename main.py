@@ -1,3 +1,5 @@
+import string
+import random
 from sys import exit
 from time import sleep
 from termcolor import colored
@@ -35,18 +37,39 @@ def fetch_name(driver):
             value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[1]/div[1]/c-wiz/div")
         return ("\n\n" + name.text)
     except BaseException as exception:
+        res = ''.join(
+            random.choices(
+                string.ascii_lowercase +
+                string.digits,
+                k=10))
+        driver.save_screenshot(f"screenshots/{str(res)}.png")
+        print(f"Screenshot saved as {res}")
         print(exception)
         return (colored("ERROR: Unable to fetch business name.", "light_red"))
 
 
 def fetch_phone(driver):
+    """Fetch phone number from right panel details."""
     try:
         phone = driver.find_element(
             By.XPATH,
             value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[2]/a/div[2]")
         return (phone.text)
     except BaseException as exception:
-        print(exception)
+        try:
+            phone = driver.find_element(
+                By.XPATH,
+                value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[1]/a/div[2]")
+            return (phone.text)
+        except BaseException:
+            res = ''.join(
+                random.choices(
+                    string.ascii_lowercase +
+                    string.digits,
+                    k=10))
+            driver.save_screenshot(f"screenshots/{str(res)}.png")
+            print(f"Screenshot saved as {res}")
+            print(exception)
         return (colored("ERROR: Unable to fetch phone number.", "light_red"))
 
 
@@ -58,27 +81,34 @@ def fetch_address(driver):
         try:
             address = driver.find_element(By.XPATH, value=tmp)
             return (address.text)
-        except BaseException as exception:
+        except BaseException:
             it -= 1
             if it == 0:
                 break
+    res = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    driver.save_screenshot(f"screenshots/{str(res)}.png")
+    print(f"Screenshot saved as {res}")
     return (colored("ERROR: Unable to fetch business address.", "light_red"))
 
 
 def fetch_website(driver, i):
     try:
         """Fetch website from left panel button."""
-        tmp = f"/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[2]/div/div/div[{i}]/a"
+        tmp = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[1]/a"
         website = driver.find_element(By.XPATH, value=tmp)
-        #/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[3]/div[2]/div/div/div/div/div/div[2]/a
-        #/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[5]/div[2]/div/div/div/div/div/div[1]/a
-        #/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[7]/div[2]/div/div/div/div/div/div[1]/a
-        #/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[9]/div[2]/div/div/div/div/div/div[1]/a
-        #/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[11]/div[2]/div/div/div/div/div/div[1]/a
-        return (website.text)
-    except BaseException as exception:
-        print(exception)
-        return (colored("Doesn't have a website.", "light_yellow"))
+        return (website.get_attribute("href"))
+    except BaseException:
+        try:
+            tmp = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[2]/a"
+            website = driver.find_element(By.XPATH, value=tmp)
+            return (website.get_attribute("href"))
+        except BaseException as exp:
+            print(exp)
+            print(tmp)
+    res = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    driver.save_screenshot(f"screenshots/{str(res)}.png")
+    print(f"Screenshot saved as {res}")
+    return (colored("Doesn't have a website.", "light_yellow"))
 
 
 def main():
@@ -90,40 +120,46 @@ def main():
     title = driver.title
     print(title)
     driver.implicitly_wait(5.5)
-    driver.save_screenshot("screenshots/before.png")
-    done = False
+    first_only = True
     pages = 1
+    no_of_businesses_fetched = 0
     while True:
         for i in range(1, 40, 2):
             clicker = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div"
-            # clicker = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[1]/div[1]/div"
-            # business = driver.find_element(By.XPATH,
-            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[1]/div[1]/div/div')
             try:
                 business = driver.find_element(By.XPATH, value=clicker)
             except BaseException:
-                print("End of business listings.")
+                print(colored("End of business listings.", "light_yellow"))
+                print(
+                    colored(
+                        f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
+                        "light_green"))
                 return
-            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[3]/div[1]/div/div')
-            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[5]/div[1]/div')
-            # value='/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[7]/div[1]/div')
             business.click()
-            # driver.implicitly_wait(10.5)
             sleep(1.25)
             print(fetch_name(driver))
+            print(driver.current_url)
             print(fetch_phone(driver))
             print(fetch_address(driver))
             print(fetch_website(driver, i))
-        if not done:
+            no_of_businesses_fetched += 1
+        """Fetching the `next` button in the first page."""
+        if first_only:
             try:
                 first_next = driver.find_element(
                     By.XPATH,
                     value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div/div/button")
-                done = True
+                first_only = False
                 first_next.click()
                 sleep(3)
             except BaseException:
-                print("ERROR: Button not found")
+                print(colored("ERROR: Button not found", "light_red"))
+                print(
+                    colored(
+                        f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
+                        "light_green"))
+                driver.quit()
+        # Fetching the `next` button in all subsequent pages.
         else:
             try:
                 next = driver.find_element(
@@ -132,53 +168,17 @@ def main():
                 next.click()
                 sleep(3)
             except BaseException:
-                print("Reached the end of listings", "light_green")
+                print(
+                    colored(
+                        "SUCCESS: Reached the end of listings",
+                        "light_green"))
+                print(
+                    colored(
+                        f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
+                        "light_green"))
+                driver.quit()
                 return
-    '''
-    business_info = driver.find_element(
-        By.XPATH,
-        value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]")
-    js_code = "arguments[0].scrollIntoView();"
-    driver.execute_script(js_code, business_info)
-    business_info.screenshot('screenshots/element.png')
-    phone = driver.find_element(
-        By.XPATH,
-        value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[2]/a/div[2]")
-    print(phone.text)
-    name = driver.find_element(
-        By.XPATH,
-        value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[1]/div[1]/c-wiz/div")
-    print(name.text)
-    address = driver.find_element(
-        By.XPATH,
-        value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[4]/div/a/div/div[2]/span")
-    print(address.text)
-    share = driver.find_element(
-        By.XPATH,
-        value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[2]/div/div/div[3]/div/div/a/div/div/button")
-    share.click()
-    driver.implicitly_wait(5.5)
-    try:
-        url = driver.find_element(
-            By.XPATH, value='//*[@id="yDmH0d"]/div[5]/div/div[2]/span/div/div/div[4]/a')
-        print(url.txt)
-    except BaseException as exp:
-        print(type(exp))
-        print("URL not yet generated")
-    print(driver.current_url)
-    driver.save_screenshot("screenshots/after.png")
-    try:
-        website = driver.find_element(
-            By.XPATH,
-            value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[2]/div/div/div[1]/a")
-            value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[2]/div/div/div[1]/div/a")
-        print(website.text)
-    except BaseException:
-        print("Doesn't have a website!")
-    print(getframeinfo(currentframe()).lineno)
-    '''
-    pages += 1
-    driver.quit()
+        pages += 1
 
 
 def initDriver():
@@ -204,8 +204,3 @@ if __name__ == "__main__":
 # print(attrs1)
 # attrs = driver.execute_script('var items = {}; for (index = 0; index < arguments[0].attributes.length; ++index) { items[arguments[0].attributes[index].name] = arguments[0].attributes[index].value }; return items;', phone)
 # print(attrs)
-"""
-/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[3]/div[2]/div/div/div/div/div/div[2]/a
-/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[1]/div[2]/div/div/div/div/div/div[1]/div/a
-/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[7]/div[2]/div/div/div/div/div/div[1]/div/a
-"""
