@@ -34,11 +34,70 @@ def fetch_reviews(driver):
     try:
         exists = driver.find_element(
             By.XPATH,
-            #value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[2]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[1]/div[2]/div[1]/div/div")
             value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[1]/div[2]/div[1]/div/div[1]/div[1]")
         return (exists.text)
     except BaseException:
         return (colored("ERROR: Unable to fetch review status.","light_red"))
+
+
+def fetch_reviews_qty(driver, i):
+    """Fetch number of reviews for a given business from right panel, next to stars."""
+    try:
+        qty = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div/div/div[2]/div[2]/div[1]/div[2]")
+        return(int(qty.get_attribute("aria-label").removesuffix(" reviews").replace(",", "")))
+    except:
+        return(colored("NOTE: Unable to fetch No. of reviews", "light_red"))
+
+def fetch_latest_review(driver, i):
+    try:
+        reviews_panel = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[3]")
+        if reviews_panel.get_attribute("aria-controls") == "reviews-panel":
+            reviews_panel.click()
+        else:
+            try:
+                reviews_panel = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[2]")
+                if reviews_panel.get_attribute("aria-controls") == "reviews-panel":
+                    reviews_panel.click()
+            except:
+                driver.save_screenshot(f"screenshots2/new_panel{i}.png")
+                return(colored("ERROR: Unable to locate reviews panel.", "light_red"))
+        #return(colored("SUCCESS", "light_green"))
+    except:
+        driver.save_screenshot(f"screenshots2/new_panel{i}.png")
+        return(colored("ERROR: Unable to locate reviews panel.", "light_red"))
+
+    try:
+        newest = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/g-scrolling-carousel/div[1]/div/div/div[2]")
+        newest.click()
+        #return(colored("SUCCESS: Found the `new reviews` button.", "light_green"))
+    except:
+        try:
+            newest = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/g-scrolling-carousel/div[1]/div/div/div[2]")
+            newest.click()
+            #return(colored("SUCCESS: Found the `new reviews` button.", "light_green"))
+        except:
+            pass
+            #driver.save_screenshot(f"screenshots2/pic{i}.png")
+            #return(colored("ERROR: Unable to find `new reviews` button.", "light_red"))
+
+    try:
+        latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/div[4]/div[1]/div[1]/div[2]/span")
+        return(latest_review_age.text)
+    except:
+        try:
+            latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/div[4]/div[1]/div[1]/div[2]/span")
+            return(latest_review_age.text)
+        except:
+            try:
+                latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/div[2]/div/div[1]/div[2]/span")
+                return(latest_review_age.text)
+            except:
+                try:
+                    latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/div[2]/div/div[1]/div[2]/span")
+                    return(latest_review_age.text)
+                except:
+                    driver.save_screenshot(f"screenshots2/pic{i}.png")
+                    return(colored("ERROR: Unable to fetch age of latest review", "light_red"))
 
 
 def fetch_name(driver):
@@ -87,9 +146,8 @@ def fetch_address(driver):
     """Fetch address from the list of details in the right panel."""
     it = 6
     while True:
-        tmp = f"/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[{it}]/div/a/div/div[2]/span"
         try:
-            address = driver.find_element(By.XPATH, value=tmp)
+            address = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[{it}]/div/a/div/div[2]/span")
             return (address.text)
         except BaseException:
             it -= 1
@@ -104,13 +162,11 @@ def fetch_address(driver):
 def fetch_website(driver, i):
     try:
         """Fetch website from left panel button."""
-        tmp = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[1]/a"
-        website = driver.find_element(By.XPATH, value=tmp)
+        website = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[1]/a")
         return (website.get_attribute("href"))
     except BaseException:
         try:
-            tmp = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[2]/a"
-            website = driver.find_element(By.XPATH, value=tmp)
+            website = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[2]/a")
             return (website.get_attribute("href"))
         except BaseException:
             res = ''.join(
@@ -137,9 +193,8 @@ def main():
     no_of_businesses_fetched = 0
     while True:
         for i in range(1, 40, 2):
-            clicker = f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div"
             try:
-                business = driver.find_element(By.XPATH, value=clicker)
+                business = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div")
             except BaseException:
                 print(colored("End of business listings.", "light_yellow"))
                 print(
@@ -154,7 +209,9 @@ def main():
             #print(fetch_phone(driver))
             #print(fetch_address(driver))
             #print(fetch_website(driver, i))
-            print(fetch_reviews(driver))
+            #print(fetch_reviews(driver))
+            #print(fetch_reviews_qty(driver, i))
+            print(fetch_latest_review(driver, i))
             no_of_businesses_fetched += 1
         """Fetching the `next` button in the first page."""
         if first_only:
@@ -196,7 +253,7 @@ def main():
 
 def initDriver():
     options = webdriver.ChromeOptions()
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     """`--disable-dev-shm-usage` flag is used inside docker container to make
     partition bigger for memory.
 
@@ -212,8 +269,3 @@ def initDriver():
 
 if __name__ == "__main__":
     main()
-
-# attrs1 = driver.execute_script('var items = {}; for (index = 0; index < arguments[0].attributes.length; ++index) { items[arguments[0].attributes[index].name] = arguments[0].attributes[index].value }; return items;', share)
-# print(attrs1)
-# attrs = driver.execute_script('var items = {}; for (index = 0; index < arguments[0].attributes.length; ++index) { items[arguments[0].attributes[index].name] = arguments[0].attributes[index].value }; return items;', phone)
-# print(attrs)
