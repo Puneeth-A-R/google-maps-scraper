@@ -1,5 +1,6 @@
 import string
 import random
+import helpers
 from sys import exit
 from time import sleep
 from termcolor import colored
@@ -49,6 +50,9 @@ def fetch_reviews_qty(driver, i):
         return(colored("NOTE: Unable to fetch No. of reviews", "light_red"))
 
 def fetch_latest_review(driver, i):
+    helpers.LOG("ERROR", "t1", driver)
+    helpers.LOG("WARNING", "t2")
+    helpers.LOG("INFO", "t3")
     try:
         reviews_panel = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[3]")
         if reviews_panel.get_attribute("aria-controls") == "reviews-panel":
@@ -180,75 +184,79 @@ def fetch_website(driver, i):
 
 
 def main():
-    driver = initDriver()
     try:
-        driver.get("https://www.google.com/localservices/prolist?g2lbs=ANTchaPeyoFcguuMKJ60Tkhs80p-baOCW0qyJ8z2ONLddkKg3PknsjzJDCErnL0qQWhSOWFihdU1Z9RTsK44JBpVQyt69wnFJ0jM0jhvo-Jcop8JCTyRAsWUDApFUXMreo3Vc7PFFp3L&hl=en-IN&gl=in&ssta=1&q=tennessee%20gyms&oq=tennessee%20gyms&slp=MgA6HENoTUl5SmppaHFudWdRTVZnVGFEQXgzZVVBeGdSAggCYACSAa0CCg0vZy8xMWd4c2c0MGRiCg0vZy8xMWYxMm5qNjVzCg0vZy8xMWI3ZjM3ejFzCg0vZy8xMWdqa3c5NHh4Cg0vZy8xMWI2bndwNTZ2Cg0vZy8xMXI2emprZmp0CgsvZy8xdGgwYzU0agoML2cvMTJobGw5MGdiCgwvZy8xcHR5bmoycjUKDS9nLzExYjZucV9oYnoKDS9nLzExYjZma2QwdjkKDC9nLzExX3FjYmN3OQoML2cvMXE1Ym15MDQxCg0vZy8xMWg4YmhybnpnCg0vZy8xMWRkdDQyN21tCgwvZy8xMmhwX3c1eHMKCy9nLzF0a3M3MTE0CgwvZy8xcTY5cXJsMTcKDS9nLzExYnR4a3gyeGMKDC9nLzFoaG1mbjRqeRIEEgIIARIECgIIAZoBBgoCFxkQAA%3D%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwi0ldyGqe6BAxVyTmwGHXBDDhMQjGp6BAgTEAE&scp=CghnY2lkOmd5bRJQEhIJA8-XniNLYYgRVpGBpcEgPgMaEgkLNjLkhLXqVBFCt95Dkrk7HCIOVGVubmVzc2VlLCBVU0EqFA13-NkUFXG2K8odVqjcFSX4q1XPMAAaBGd5bXMiDnRlbm5lc3NlZSBneW1zKgNHeW0%3D")
-    except BaseException:
-        exit(colored("ERROR: Unable to get web page.", "light_red"))
-    title = driver.title
-    print(title)
-    driver.implicitly_wait(5.5)
-    first_only = True
-    pages = 1
-    no_of_businesses_fetched = 0
-    while True:
-        for i in range(1, 40, 2):
-            try:
-                business = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div")
-            except BaseException:
-                print(colored("End of business listings.", "light_yellow"))
-                print(
-                    colored(
-                        f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
-                        "light_green"))
-                return
-            business.click()
-            sleep(1.25)
-            print(fetch_name(driver))
-            #print(driver.current_url)
-            #print(fetch_phone(driver))
-            #print(fetch_address(driver))
-            #print(fetch_website(driver, i))
-            #print(fetch_reviews(driver))
-            #print(fetch_reviews_qty(driver, i))
-            print(fetch_latest_review(driver, i))
-            no_of_businesses_fetched += 1
-        """Fetching the `next` button in the first page."""
-        if first_only:
-            try:
-                first_next = driver.find_element(
-                    By.XPATH,
-                    value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div/div/button")
-                first_only = False
-                first_next.click()
-                sleep(3)
-            except BaseException:
-                print(colored("ERROR: Button not found", "light_red"))
-                print(
-                    colored(
-                        f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
-                        "light_green"))
-                driver.quit()
-        # Fetching the `next` button in all subsequent pages.
-        else:
-            try:
-                next = driver.find_element(
-                    By.XPATH,
-                    value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div[2]/div/button")
-                next.click()
-                sleep(3)
-            except BaseException:
-                print(
-                    colored(
-                        "SUCCESS: Reached the end of listings",
-                        "light_green"))
-                print(
-                    colored(
-                        f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
-                        "light_green"))
-                driver.quit()
-                return
-        pages += 1
+        driver = initDriver()
+        print(type(driver))
+        try:
+            driver.get("https://www.google.com/localservices/prolist?g2lbs=ANTchaPeyoFcguuMKJ60Tkhs80p-baOCW0qyJ8z2ONLddkKg3PknsjzJDCErnL0qQWhSOWFihdU1Z9RTsK44JBpVQyt69wnFJ0jM0jhvo-Jcop8JCTyRAsWUDApFUXMreo3Vc7PFFp3L&hl=en-IN&gl=in&ssta=1&q=tennessee%20gyms&oq=tennessee%20gyms&slp=MgA6HENoTUl5SmppaHFudWdRTVZnVGFEQXgzZVVBeGdSAggCYACSAa0CCg0vZy8xMWd4c2c0MGRiCg0vZy8xMWYxMm5qNjVzCg0vZy8xMWI3ZjM3ejFzCg0vZy8xMWdqa3c5NHh4Cg0vZy8xMWI2bndwNTZ2Cg0vZy8xMXI2emprZmp0CgsvZy8xdGgwYzU0agoML2cvMTJobGw5MGdiCgwvZy8xcHR5bmoycjUKDS9nLzExYjZucV9oYnoKDS9nLzExYjZma2QwdjkKDC9nLzExX3FjYmN3OQoML2cvMXE1Ym15MDQxCg0vZy8xMWg4YmhybnpnCg0vZy8xMWRkdDQyN21tCgwvZy8xMmhwX3c1eHMKCy9nLzF0a3M3MTE0CgwvZy8xcTY5cXJsMTcKDS9nLzExYnR4a3gyeGMKDC9nLzFoaG1mbjRqeRIEEgIIARIECgIIAZoBBgoCFxkQAA%3D%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwi0ldyGqe6BAxVyTmwGHXBDDhMQjGp6BAgTEAE&scp=CghnY2lkOmd5bRJQEhIJA8-XniNLYYgRVpGBpcEgPgMaEgkLNjLkhLXqVBFCt95Dkrk7HCIOVGVubmVzc2VlLCBVU0EqFA13-NkUFXG2K8odVqjcFSX4q1XPMAAaBGd5bXMiDnRlbm5lc3NlZSBneW1zKgNHeW0%3D")
+        except BaseException:
+            exit(colored("ERROR: Unable to get web page.", "light_red"))
+        title = driver.title
+        print(title)
+        driver.implicitly_wait(5.5)
+        first_only = True
+        pages = 1
+        no_of_businesses_fetched = 0
+        while True:
+            for i in range(1, 40, 2):
+                try:
+                    business = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div")
+                except BaseException:
+                    print(colored("End of business listings.", "light_yellow"))
+                    print(
+                        colored(
+                            f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
+                            "light_green"))
+                    return
+                business.click()
+                sleep(1.25)
+                print(fetch_name(driver))
+                #print(driver.current_url)
+                #print(fetch_phone(driver))
+                #print(fetch_address(driver))
+                #print(fetch_website(driver, i))
+                #print(fetch_reviews(driver))
+                #print(fetch_reviews_qty(driver, i))
+                print(fetch_latest_review(driver, i))
+                no_of_businesses_fetched += 1
+            """Fetching the `next` button in the first page."""
+            if first_only:
+                try:
+                    first_next = driver.find_element(
+                        By.XPATH,
+                        value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div/div/button")
+                    first_only = False
+                    first_next.click()
+                    sleep(3)
+                except BaseException:
+                    print(colored("ERROR: Button not found", "light_red"))
+                    print(
+                        colored(
+                            f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
+                            "light_green"))
+                    driver.quit()
+            # Fetching the `next` button in all subsequent pages.
+            else:
+                try:
+                    next = driver.find_element(
+                        By.XPATH,
+                        value="/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[2]/div[2]/div/button")
+                    next.click()
+                    sleep(3)
+                except BaseException:
+                    print(
+                        colored(
+                            "SUCCESS: Reached the end of listings",
+                            "light_green"))
+                    print(
+                        colored(
+                            f"No. of pages scanned: {pages}, No. of businesses fetched: {no_of_businesses_fetched}",
+                            "light_green"))
+                    driver.quit()
+                    return
+            pages += 1
+    except KeyboardInterrupt:
+        pause_execution()
 
 
 def initDriver():
