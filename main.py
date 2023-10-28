@@ -1,6 +1,7 @@
 import string
 import random
 import helpers
+from collections import deque
 from sys import exit
 from time import sleep
 from termcolor import colored
@@ -9,99 +10,147 @@ from selenium.webdriver.common.by import By
 # from inspect import currentframe, getframeinfo
 
 
-class business:
-    """Getter method."""
+class Business:
+    """Constructor for `Business` object."""
+
+    def __init__(
+            self,
+            business_name,
+            url,
+            latest_review_age="",
+            phone="",
+            address="",
+            website="",
+            rating="",
+            reviews_qty=""):
+        self._business_name = business_name.strip()
+        self._url = url.strip()
+        self._latest_review_age = latest_review_age.strip()
+        self._phone = phone.strip()
+        self._address = address.strip()
+        self._website = website.strip()
+        rating = rating.strip()
+        try:
+            self._rating = float(rating)
+        except ValueError:
+            pass
+        self._reviews_qty = reviews_qty
+
+    """Getter for `Business object."""
     @property
     def info(self):
         return (
-            self.business_name,
-            self.url,
-            self.phone,
-            self.address,
-            self.website)
-    """Setter method."""
-    @info.setter
-    def info(self, business_name, url,
-             phone="", address="", website=""):
-        self.business_name = business_name
-        self.url = url
-        self.phone = phone
-        self.address = address
-        self.website = website
+            self._business_name,
+            self._url,
+            self._latest_review_age,
+            self._phone,
+            self._address,
+            self._website,
+            self._rating,
+            self._reviews_qty)
+
+    def __str__():
+        return "This is an object of `Business` class and is meant to represent a business listing fetched from the left column of google local services(maps)."""
 
 
-def fetch_reviews(driver):
-    """Fetch reviews from right panel, below the big bold business name."""
+def fetch_rating(driver):
+    """Fetch reviews from right panel, below the big bold business name
+    (x/5.0)."""
     try:
         exists = driver.find_element(
             By.XPATH,
             value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/c-wiz[1]/div[2]/div[1]/div/div[1]/div[1]")
-        return (exists.text)
+        return (str((exists.text)))
     except BaseException:
-        return (colored("ERROR: Unable to fetch review status.","light_red"))
+        return (colored("ERROR: Unable to fetch review status.", "light_red"))
 
 
 def fetch_reviews_qty(driver, i):
-    """Fetch number of reviews for a given business from right panel, next to stars."""
+    """Fetch number of reviews for a given business from right panel, next to
+    stars."""
     try:
-        qty = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div/div/div[2]/div[2]/div[1]/div[2]")
-        return(int(qty.get_attribute("aria-label").removesuffix(" reviews").replace(",", "")))
-    except:
-        return(colored("NOTE: Unable to fetch No. of reviews", "light_red"))
+        qty = driver.find_element(
+            By.XPATH,
+            value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div/div/div[2]/div[2]/div[1]/div[2]")
+        return (int(qty.get_attribute(
+            "aria-label").removesuffix(" reviews").replace(",", "")))
+    except BaseException:
+        return (colored("NOTE: Unable to fetch No. of reviews.", "light_red"))
 
-def fetch_latest_review(driver, i):
-    helpers.LOG("ERROR", "t1", driver)
-    helpers.LOG("WARNING", "t2")
-    helpers.LOG("INFO", "t3")
+
+def fetch_latest_review(driver):
     try:
-        reviews_panel = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[3]")
+        reviews_panel = driver.find_element(
+            By.XPATH,
+            value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[3]")
         if reviews_panel.get_attribute("aria-controls") == "reviews-panel":
             reviews_panel.click()
         else:
             try:
-                reviews_panel = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[2]")
-                if reviews_panel.get_attribute("aria-controls") == "reviews-panel":
+                reviews_panel = driver.find_element(
+                    By.XPATH,
+                    value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[1]/div/div/span/button[2]")
+                if reviews_panel.get_attribute(
+                        "aria-controls") == "reviews-panel":
                     reviews_panel.click()
-            except:
-                driver.save_screenshot(f"screenshots2/new_panel{i}.png")
-                return(colored("ERROR: Unable to locate reviews panel.", "light_red"))
-        #return(colored("SUCCESS", "light_green"))
-    except:
-        driver.save_screenshot(f"screenshots2/new_panel{i}.png")
-        return(colored("ERROR: Unable to locate reviews panel.", "light_red"))
+            except BaseException:
+                return (
+                    colored(
+                        "ERROR: Unable to locate reviews panel.",
+                        "light_red"))
+        # return(colored("SUCCESS", "light_green"))
+    except BaseException:
+        return (colored("ERROR: Unable to locate reviews panel.", "light_red"))
 
     try:
-        newest = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/g-scrolling-carousel/div[1]/div/div/div[2]")
+        newest = driver.find_element(
+            By.XPATH,
+            value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/g-scrolling-carousel/div[1]/div/div/div[2]")
         newest.click()
-        #return(colored("SUCCESS: Found the `new reviews` button.", "light_green"))
-    except:
+        # return(colored("SUCCESS: Found the `new reviews` button.",
+        # "light_green"))
+    except BaseException:
         try:
-            newest = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/g-scrolling-carousel/div[1]/div/div/div[2]")
+            newest = driver.find_element(
+                By.XPATH,
+                value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/g-scrolling-carousel/div[1]/div/div/div[2]")
             newest.click()
-            #return(colored("SUCCESS: Found the `new reviews` button.", "light_green"))
-        except:
+            # return(colored("SUCCESS: Found the `new reviews` button.",
+            # "light_green"))
+        except BaseException:
             pass
-            #driver.save_screenshot(f"screenshots2/pic{i}.png")
-            #return(colored("ERROR: Unable to find `new reviews` button.", "light_red"))
+            # driver.save_screenshot(f"screenshots2/pic{i}.png")
+            # return (colored("ERROR: Unable to find `new reviews`
+            # button.","light_red"))
 
     try:
-        latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/div[4]/div[1]/div[1]/div[2]/span")
-        return(latest_review_age.text)
-    except:
+        latest_review_age = driver.find_element(
+            By.XPATH,
+            value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/div[4]/div[1]/div[1]/div[2]/span")
+        return (latest_review_age.text)
+    except BaseException:
         try:
-            latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/div[4]/div[1]/div[1]/div[2]/span")
-            return(latest_review_age.text)
-        except:
+            latest_review_age = driver.find_element(
+                By.XPATH,
+                value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/div[4]/div[1]/div[1]/div[2]/span")
+            return (latest_review_age.text)
+        except BaseException:
             try:
-                latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/div[2]/div/div[1]/div[2]/span")
-                return(latest_review_age.text)
-            except:
+                latest_review_age = driver.find_element(
+                    By.XPATH,
+                    value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[3]/span/c-wiz/div[2]/div/div[2]/div/div[1]/div[2]/span")
+                return (latest_review_age.text)
+            except BaseException:
                 try:
-                    latest_review_age = driver.find_element(By.XPATH, value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/div[2]/div/div[1]/div[2]/span")
-                    return(latest_review_age.text)
-                except:
-                    driver.save_screenshot(f"screenshots2/pic{i}.png")
-                    return(colored("ERROR: Unable to fetch age of latest review", "light_red"))
+                    latest_review_age = driver.find_element(
+                        By.XPATH,
+                        value="/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[4]/span/c-wiz/div[2]/div/div[2]/div/div[1]/div[2]/span")
+                    return (latest_review_age.text)
+                except BaseException:
+                    return (
+                        colored(
+                            "ERROR: Unable to fetch age of latest review.",
+                            "light_red"))
 
 
 def fetch_name(driver):
@@ -151,7 +200,9 @@ def fetch_address(driver):
     it = 6
     while True:
         try:
-            address = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[{it}]/div/a/div/div[2]/span")
+            address = driver.find_element(
+                By.XPATH,
+                value=f"/html/body/c-wiz/div/div[3]/div/div/div[2]/div[3]/div[1]/c-wiz/div/c-wiz/div/div/div[3]/div[3]/div/div[2]/span/div[2]/div/div/div[{it}]/div/a/div/div[2]/span")
             return (address.text)
         except BaseException:
             it -= 1
@@ -166,11 +217,15 @@ def fetch_address(driver):
 def fetch_website(driver, i):
     try:
         """Fetch website from left panel button."""
-        website = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[1]/a")
+        website = driver.find_element(
+            By.XPATH,
+            value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[1]/a")
         return (website.get_attribute("href"))
     except BaseException:
         try:
-            website = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[2]/a")
+            website = driver.find_element(
+                By.XPATH,
+                value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[2]/div/div/div/div/div/div[2]/a")
             return (website.get_attribute("href"))
         except BaseException:
             res = ''.join(
@@ -184,12 +239,15 @@ def fetch_website(driver, i):
 
 
 def main():
+    # pipeline = deque()
     try:
         driver = initDriver()
         print(type(driver))
         try:
             driver.get("https://www.google.com/localservices/prolist?g2lbs=ANTchaPeyoFcguuMKJ60Tkhs80p-baOCW0qyJ8z2ONLddkKg3PknsjzJDCErnL0qQWhSOWFihdU1Z9RTsK44JBpVQyt69wnFJ0jM0jhvo-Jcop8JCTyRAsWUDApFUXMreo3Vc7PFFp3L&hl=en-IN&gl=in&ssta=1&q=tennessee%20gyms&oq=tennessee%20gyms&slp=MgA6HENoTUl5SmppaHFudWdRTVZnVGFEQXgzZVVBeGdSAggCYACSAa0CCg0vZy8xMWd4c2c0MGRiCg0vZy8xMWYxMm5qNjVzCg0vZy8xMWI3ZjM3ejFzCg0vZy8xMWdqa3c5NHh4Cg0vZy8xMWI2bndwNTZ2Cg0vZy8xMXI2emprZmp0CgsvZy8xdGgwYzU0agoML2cvMTJobGw5MGdiCgwvZy8xcHR5bmoycjUKDS9nLzExYjZucV9oYnoKDS9nLzExYjZma2QwdjkKDC9nLzExX3FjYmN3OQoML2cvMXE1Ym15MDQxCg0vZy8xMWg4YmhybnpnCg0vZy8xMWRkdDQyN21tCgwvZy8xMmhwX3c1eHMKCy9nLzF0a3M3MTE0CgwvZy8xcTY5cXJsMTcKDS9nLzExYnR4a3gyeGMKDC9nLzFoaG1mbjRqeRIEEgIIARIECgIIAZoBBgoCFxkQAA%3D%3D&src=2&serdesk=1&sa=X&ved=2ahUKEwi0ldyGqe6BAxVyTmwGHXBDDhMQjGp6BAgTEAE&scp=CghnY2lkOmd5bRJQEhIJA8-XniNLYYgRVpGBpcEgPgMaEgkLNjLkhLXqVBFCt95Dkrk7HCIOVGVubmVzc2VlLCBVU0EqFA13-NkUFXG2K8odVqjcFSX4q1XPMAAaBGd5bXMiDnRlbm5lc3NlZSBneW1zKgNHeW0%3D")
+            # driver.get("https://www.google.com/localservices/prolist?g2lbs=ANTchaPeyoFcguuMKJ60Tkhs80p-baOCW0qyJ8z2ONLddkKg3PknsjzJDCErnL0qQWhSOWFihdU1Z9RTsK44JBpVQyt69wnFJ0jM0jhvo-Jcop8JCTyRAsWUDApFUXMreo3Vc7PFFp3L&hl=en-IN&gl=in&ssta=1&oq=tennessee%20gyms&src=2&sa=X&q=pick%20your%20own%20fruit%20california&ved=2ahUKEwj9jN2B_ZOCAxUZi44KHTIbAXUQjdcJegQIABAF&scp=CgpnY2lkOnN0b3JlEgAaACoEU2hvcA%3D%3D&slp=MgBAAVIECAIgAIgBAJoBBgoCFxkQAA%3D%3D")
         except BaseException:
+            # exit(helpers.LOG("ERROR", "Unable to get web page."))
             exit(colored("ERROR: Unable to get web page.", "light_red"))
         title = driver.title
         print(title)
@@ -200,7 +258,9 @@ def main():
         while True:
             for i in range(1, 40, 2):
                 try:
-                    business = driver.find_element(By.XPATH, value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div")
+                    business = driver.find_element(
+                        By.XPATH,
+                        value=f"/html/body/c-wiz/div/div[3]/div/div/div[1]/div[3]/div[3]/c-wiz/div/div/div[1]/c-wiz/div/div[{i}]/div[1]/div/div")
                 except BaseException:
                     print(colored("End of business listings.", "light_yellow"))
                     print(
@@ -210,14 +270,20 @@ def main():
                     return
                 business.click()
                 sleep(1.25)
-                print(fetch_name(driver))
-                #print(driver.current_url)
-                #print(fetch_phone(driver))
-                #print(fetch_address(driver))
-                #print(fetch_website(driver, i))
-                #print(fetch_reviews(driver))
-                #print(fetch_reviews_qty(driver, i))
-                print(fetch_latest_review(driver, i))
+                business_listing = Business(
+                    fetch_name(driver),
+                    driver.current_url,
+                    phone=fetch_phone(driver),
+                    address=fetch_address(driver),
+                    latest_review_age=fetch_latest_review(driver),
+                    website=fetch_website(
+                        driver,
+                        i),
+                    rating=fetch_rating(driver),
+                    reviews_qty=fetch_reviews_qty(
+                        driver,
+                        i))
+                print(business_listing.info)
                 no_of_businesses_fetched += 1
             """Fetching the `next` button in the first page."""
             if first_only:
@@ -256,7 +322,7 @@ def main():
                     return
             pages += 1
     except KeyboardInterrupt:
-        pause_execution()
+        helpers.pause_execution()
 
 
 def initDriver():
